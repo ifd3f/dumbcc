@@ -1,0 +1,27 @@
+name: dumbcc-lib
+dependencies:
+  - base
+  - bytestring
+  - optparse-applicative
+  - text
+ghc-options:
+  - -Wall
+  - -Wcompat
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
+executables:
+  dumbcc:
+    main: DumbCC/Main.hs
+    source-dirs: app
+    dependencies:
+      - dumbcc-lib
+tests:
+  dumbcc-tests:
+    main: DumbCC/Spec.hs
+    source-dirs: test
+    dependencies:
+      - dumbcc-lib
+      - hspec
+library:
+  source-dirs: src
