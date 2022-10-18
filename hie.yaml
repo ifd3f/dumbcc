@@ -1,0 +1,13 @@
+cradle:
+  cabal:
+    - path: "src"
+      component: "lib:dumbcc-lib"
+
+    - path: "app/DumbCC/Main.hs"
+      component: "dumbcc-lib:exe:dumbcc"
+
+    - path: "app/Paths_dumbcc_lib.hs"
+      component: "dumbcc-lib:exe:dumbcc"
+
+    - path: "test"
+      component: "dumbcc-lib:test:dumbcc-tests"

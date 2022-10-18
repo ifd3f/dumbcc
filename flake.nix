@@ -32,7 +32,7 @@
       in rec {
         packages = { inherit (pkgs) dumbcc; };
 
-        devShells.default = pkgs.dumbcc'.shellFor {
+        devShells.default = with pkgs; dumbcc'.shellFor {
           tools = {
             cabal = "latest";
             hlint =
@@ -41,6 +41,8 @@
             haskell-language-server = "latest";
             hpack = "latest";
           };
+
+          buildInputs = [haskellPackages.implicit-hie];
 
           LD_LIBRARY_PATH = lib.makeLibraryPath [ ];
         };

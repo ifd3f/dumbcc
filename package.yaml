@@ -2,7 +2,10 @@ name: dumbcc-lib
 dependencies:
   - base
   - bytestring
+  - mtl
   - optparse-applicative
+  - raw-strings-qq
+  - regex-tdfa
   - text
 ghc-options:
   - -Wall
