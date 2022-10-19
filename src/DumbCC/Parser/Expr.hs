@@ -3,10 +3,10 @@
 
 module DumbCC.Parser.Expr where
 
-import Control.Monad.Except
-import Control.Monad.State
 import DumbCC.Lexer
 import DumbCC.Parser.Types.Sugared
+import qualified DumbCC.Parser.Utils as U
+import DumbCC.Parser.Utils hiding (Parser)
 
 parseExpr :: [Token] -> (Maybe ExprS)
 parseExpr = undefined
@@ -23,19 +23,7 @@ data StackState =
   | StBi BOp
   | StOpenParen
 
-newtype Parser a = Parser
-  { runParser :: ExceptT String (State PS) a
-  }
-  deriving (Functor, Applicative, Monad)
-
-instance MonadFail Parser where
-  fail err = Parser $ throwError err
-
-liftGet :: (PS -> a) -> Parser a
-liftGet f = Parser $ lift (f <$> get)
-
-state' :: (PS -> (a, PS)) -> Parser a
-state' f = Parser $ lift (state f)
+type Parser = U.Parser PS
 
 getExprStack :: Parser [(Bool, ExprS)]
 getExprStack = liftGet exprStack
