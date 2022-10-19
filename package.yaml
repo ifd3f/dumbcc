@@ -16,16 +16,17 @@ ghc-options:
   - -Wredundant-constraints
 executables:
   dumbcc:
-    main: DumbCC/Main.hs
+    main: Main.hs
     source-dirs: app
     dependencies:
       - dumbcc-lib
 tests:
   dumbcc-tests:
-    main: DumbCC/Spec.hs
+    main: Spec.hs
     source-dirs: test
     dependencies:
       - dumbcc-lib
       - hspec
+      - hspec-discover
 library:
   source-dirs: src

@@ -16,13 +16,9 @@
           compiler-nix-name = "ghc924";
         };
 
-        dumbcc = (final.dumbcc'.flake
-          { }).packages."dumbcc:exe:dumbcc";
+        dumbcc = (final.dumbcc'.flake { }).packages."dumbcc:exe:dumbcc";
       });
-    } // (flake-utils.lib.eachSystem [
-      "x86_64-linux"
-      "x86_64-darwin"
-    ] (system:
+    } // (flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" ] (system:
       let
         pkgs = import nixpkgs {
           inherit system;
@@ -32,19 +28,21 @@
       in rec {
         packages = { inherit (pkgs) dumbcc; };
 
-        devShells.default = with pkgs; dumbcc'.shellFor {
-          tools = {
-            cabal = "latest";
-            hlint =
-              "latest"; # Selects the latest version in the hackage.nix snapshot
-            hindent = "latest";
-            haskell-language-server = "latest";
-            hpack = "latest";
+        devShells.default = with pkgs;
+          dumbcc'.shellFor {
+            tools = {
+              cabal = "latest";
+              hlint =
+                "latest"; # Selects the latest version in the hackage.nix snapshot
+              hindent = "latest";
+              haskell-language-server = "latest";
+              hpack = "latest";
+            };
+
+            buildInputs =
+              [ haskellPackages.implicit-hie haskellPackages.hspec-discover ];
+
+            LD_LIBRARY_PATH = lib.makeLibraryPath [ ];
           };
-
-          buildInputs = [haskellPackages.implicit-hie];
-
-          LD_LIBRARY_PATH = lib.makeLibraryPath [ ];
-        };
       }));
 }

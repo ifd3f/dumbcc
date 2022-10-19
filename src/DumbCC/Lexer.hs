@@ -3,16 +3,17 @@
 module DumbCC.Lexer where
 
 import Control.Monad.State
+import Data.Char
 import Text.RawString.QQ
 import Text.Regex.TDFA
 
 data Token
   = TId String
-  | TFloat Double
-  | TInt Integer
+  | TNum String
   | TStr String
   | TOp Op
-  | TPunct Punct
+  | TPnc Punct
+  deriving (Show, Eq)
 
 data Punct
   = Comma
@@ -24,6 +25,7 @@ data Punct
   | RBrace
   | LParen
   | RParen
+  deriving (Show, Eq)
 
 data Op
   = Add
@@ -46,9 +48,21 @@ data Op
   | Le
   | Geq
   | Leq
+  deriving (Show, Eq)
 
-lex :: String -> [Token]
-lex "" = []
+lex :: String -> [(Int, Token)]
+lex s = evalState takeLex (0, s)
+
+takeLex :: Tokenizer [(Int, Token)]
+takeLex = do
+  _ <- takeSpace
+  i <- peekPos
+  t <- takeToken
+  case t of
+    Just t' -> do
+      rest <- takeLex
+      pure $ (i, t') : rest
+    Nothing -> pure []
 
 type Tokenizer = State (Int, String)
 
@@ -74,17 +88,19 @@ takeChar = do
 takeRegex :: String -> Tokenizer String
 takeRegex regex = do
   (i, s) <- get
-  let (_, result, rest) = s =~ (regex) :: (String, String, String)
-  put (i, rest)
-  pure result
+  let (pre, result, post) = s =~ (regex) :: (String, String, String)
+  case pre of
+    "" -> do
+      put (i + length result, post)
+      pure result
+    _ -> pure ""
 
 takeToken :: Tokenizer (Maybe Token)
 takeToken =
-  (TPunct <$$> takePunct)
+  (TPnc <$$> takePunct)
+    <||> (TNum <$$> takeFloat)
     <||> (TOp <$$> takeOp)
-    <||> (TFloat <$$> takeFloat)
     <||> (TId <$$> takeId)
-    <||> (TInt <$$> takeInt)
 
 -- | Double fmap
 (<$$>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
@@ -105,22 +121,24 @@ takeId = do
     "" -> Nothing
     s' -> Just s'
 
-takeInt :: Tokenizer (Maybe Integer)
-takeInt = do
-  s <- takeRegex [r|^\d+|]
-  pure $ case s of
-    "" -> Nothing
-    s' -> Just (read s' :: Integer)
-
-takeFloat :: Tokenizer (Maybe Double)
+takeFloat :: Tokenizer (Maybe String)
 takeFloat = do
   s <- takeRegex "^[+-]?([0-9]*[.])?[0-9]+f?"
   pure $ case s of
     "" -> Nothing
-    s' -> Just (read s' :: Double)
+    s' -> Just s'
 
-takeSpace :: Tokenizer String
-takeSpace = takeRegex [r|^\w+|]
+takeSpace :: Tokenizer ()
+takeSpace = do
+  pc <- peekChar
+  case pc of
+    Just c ->
+      if isSpace c
+        then do
+          _ <- takeChar
+          takeSpace
+        else pure ()
+    _ -> pure ()
 
 takePunct :: Tokenizer (Maybe Punct)
 takePunct = do
@@ -146,7 +164,7 @@ takePunct = do
 
 takeOp :: Tokenizer (Maybe Op)
 takeOp = do
-  s <- takeRegex [r|^[+-*/=&|^><]+|]
+  s <- takeRegex [r|^[\+-\*/=&|^><]+|]
   pure $ case s of
     "+" -> Just Add
     "-" -> Just Sub
