@@ -6,6 +6,7 @@ import Control.Monad.State
 import Data.Char
 import Data.List (isPrefixOf)
 import Text.Regex.TDFA
+import DumbCC.Parser.Utils
 
 data Token
   = TId String
@@ -109,18 +110,6 @@ takeToken =
   (TPnc <$$> takePunct)
     <||> (TNum <$$> takeFloat)
     <||> (TId <$$> takeId)
-
--- | Double fmap
-(<$$>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
-a <$$> b = (fmap a) <$> b
-
--- | Short-circuiting orElse with monads.
-(<||>) :: Monad m => m (Maybe b) -> m (Maybe b) -> m (Maybe b)
-a <||> b = do
-  a' <- a
-  case a' of
-    Nothing -> b
-    Just x -> pure $ Just x
 
 takeId :: Tokenizer (Maybe String)
 takeId = do

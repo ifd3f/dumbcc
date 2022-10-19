@@ -35,3 +35,18 @@ state' f = Parser $ lift (state f)
 
 put' :: s -> Parser s ()
 put' s = Parser $ lift (put s)
+
+liftEither' :: Either String a -> Parser s a
+liftEither' = Parser . liftEither
+
+-- | Double fmap
+(<$$>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
+a <$$> b = (fmap a) <$> b
+
+-- | Short-circuiting orElse with monads.
+(<||>) :: Monad m => m (Maybe b) -> m (Maybe b) -> m (Maybe b)
+a <||> b = do
+  a' <- a
+  case a' of
+    Nothing -> b
+    Just x -> pure $ Just x

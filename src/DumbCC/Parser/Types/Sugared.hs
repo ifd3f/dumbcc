@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveFunctor #-}
+
 module DumbCC.Parser.Types.Sugared where
 
 data ExprS
@@ -11,7 +13,7 @@ data ExprS
 
 data Prog s
   = Prog [Func s]
-  deriving (Show, Eq)
+  deriving (Show, Eq, Functor)
 
 data Func s = Func
   { fName :: String,
@@ -19,7 +21,10 @@ data Func s = Func
     fArgs :: [(String, String)],
     fBody :: s
   }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Functor)
+
+type SProg = Prog SStmt
+type SFunc = Func SStmt
 
 -- | A sugared statement
 data SStmt
