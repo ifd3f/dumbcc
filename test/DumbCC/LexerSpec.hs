@@ -82,18 +82,18 @@ spec = do
           [ TId "if",
             TPnc LParen,
             TNum "3",
-            TOp Add,
+            TPnc Add,
             TNum "2",
-            TOp Eq,
+            TPnc Eq,
             TNum "5",
             TPnc RParen
           ]
         ),
         ( "three = five * 32;",
           [ TId "three",
-            TOp Eq,
+            TPnc Eq,
             TId "five",
-            TOp Mul,
+            TPnc Mul,
             TNum "32",
             TPnc Semicolon
           ]
