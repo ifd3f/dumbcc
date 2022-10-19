@@ -2,13 +2,13 @@
 
 module DumbCC.Parser.ExprSpec where
 
+import Data.Traversable
 import DumbCC.Lexer
 import qualified DumbCC.Lexer as L
+import DumbCC.Parser.Expr
 import DumbCC.Parser.Types.Sugared
 import qualified DumbCC.Parser.Types.Sugared as P
 import Test.Hspec
-import Data.Traversable
-import DumbCC.Parser.Expr
 
 spec :: Spec
 spec = do
@@ -20,7 +20,11 @@ spec = do
             TPnc L.Eq,
             TNum "5"
           ],
-          Just $ EBi P.Eq (EBi P.Add (ELit (LNum "5")) (ELit (LNum "5"))) (ELit (LNum "5"))
+          Just $
+            EBi
+              P.Eq
+              (EBi P.Add (ELit (LNum "5")) (ELit (LNum "5")))
+              (ELit (LNum "5"))
         ),
         ( [ TId "five",
             TPnc L.Mul,

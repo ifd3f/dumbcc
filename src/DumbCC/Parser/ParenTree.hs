@@ -18,7 +18,7 @@ data Paren = Curl | Brac | Paren
 
 detectParens :: [Token] -> Either String [PTree]
 detectParens [] = Right []
-detectParens toks = detectParens' [] toks
+detectParens toks = reverse <$> detectParens' [] toks
   where
     detectParens' stack [] = reduceEmpty stack
     detectParens' stack (t : ts) = do

@@ -4,7 +4,7 @@ module DumbCC.Lexer where
 
 import Control.Monad.State
 import Data.Char
-import Text.RawString.QQ
+import Data.List (isPrefixOf)
 import Text.Regex.TDFA
 
 data Token
@@ -92,11 +92,22 @@ takeRegex regex = do
       pure result
     _ -> pure ""
 
+-- | Checks if the input stream has the given prefix.
+-- | If it does, returns True and advances the read head past the prefix.
+-- | Otherwise, returns False and does nothing.
+takePrefix :: String -> Tokenizer Bool
+takePrefix str = do
+  (i, s) <- get
+  if str `isPrefixOf` s
+    then do
+      put (i + length str, drop (length str) s)
+      pure True
+    else pure False
+
 takeToken :: Tokenizer (Maybe Token)
 takeToken =
   (TPnc <$$> takePunct)
     <||> (TNum <$$> takeFloat)
-    <||> (TPnc <$$> takeOp)
     <||> (TId <$$> takeId)
 
 -- | Double fmap
@@ -131,57 +142,49 @@ takeSpace = do
   case pc of
     Just c ->
       if isSpace c
-        then do
-          _ <- takeChar
-          takeSpace
+        then do _ <- takeChar; takeSpace
         else pure ()
     _ -> pure ()
 
 takePunct :: Tokenizer (Maybe Punct)
-takePunct = do
-  -- Peek the character on top
-  c <- peekChar
-  let result = case c of
-        Just ',' -> Just Comma
-        Just ';' -> Just Semicolon
-        Just '?' -> Just Question
-        Just ':' -> Just Colon
-        Just '{' -> Just LCurl
-        Just '}' -> Just RCurl
-        Just '[' -> Just LBrac
-        Just ']' -> Just RBrac
-        Just '(' -> Just LParen
-        Just ')' -> Just RParen
-        _ -> Nothing
-
-  -- If it was a punctuation character, then move forward.
-  case result of
-    Just _ -> do _ <- takeChar; pure ()
-    _ -> pure ()
-  pure result
-
-takeOp :: Tokenizer (Maybe Punct)
-takeOp = do
-  s <- takeRegex [r|^[\+-\*/=&|^><]{1,2}|]
-  pure $ case s of
-    "+" -> Just Add
-    "-" -> Just Sub
-    "*" -> Just Mul
-    "/" -> Just Div
-    "&" -> Just BAnd
-    "|" -> Just BOr
-    "~" -> Just BNot
-    "&&" -> Just LAnd
-    "||" -> Just LOr
-    "!" -> Just LNot
-    "^" -> Just Xor
-    "++" -> Just Inc
-    "--" -> Just Dec
-    "=" -> Just Asgn
-    "==" -> Just Eq
-    "!=" -> Just Neq
-    ">" -> Just Ge
-    "<" -> Just Le
-    ">=" -> Just Geq
-    "<=" -> Just Leq
-    _ -> Nothing
+takePunct = tryList syms
+  where
+    tryList :: [(String, Punct)] -> Tokenizer (Maybe Punct)
+    tryList [] = pure Nothing
+    tryList ((sym, out) : rest) = do
+      result <- takePrefix sym
+      if result
+        then pure $ Just out
+        else tryList rest
+    syms =
+      [ ("&&", LAnd),
+        ("||", LOr),
+        ("++", Inc),
+        ("--", Dec),
+        ("==", Eq),
+        ("!=", Neq),
+        (">=", Geq),
+        ("<=", Leq),
+        ("+", Add),
+        ("-", Sub),
+        ("*", Mul),
+        ("/", Div),
+        ("&", BAnd),
+        ("|", BOr),
+        ("~", BNot),
+        ("!", LNot),
+        ("^", Xor),
+        ("=", Asgn),
+        (">", Ge),
+        ("<", Le),
+        (",", Comma),
+        (";", Semicolon),
+        ("?", Question),
+        (":", Colon),
+        ("{", LCurl),
+        ("}", RCurl),
+        ("[", LBrac),
+        ("]", RBrac),
+        ("(", LParen),
+        (")", RParen)
+      ]

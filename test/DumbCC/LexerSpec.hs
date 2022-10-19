@@ -91,15 +91,27 @@ spec = do
         ),
         ( "three = five * 32;",
           [ TId "three",
-            TPnc Eq,
+            TPnc Asgn,
             TId "five",
             TPnc Mul,
             TNum "32",
             TPnc Semicolon
           ]
+        ),
+        ( "12 {(foo 32 !) bar}",
+          [ TNum "12",
+            TPnc LCurl,
+            TPnc LParen,
+            TId "foo",
+            TNum "32",
+            TPnc LNot,
+            TPnc RParen,
+            TId "bar",
+            TPnc RCurl
+          ]
         )
       ]
       $ \(input, expected) -> do
-        it ("lexes " ++ show input ++ " as " ++ show expected) $ do
+        it ("correctly lexes " ++ show input) $ do
           map snd (L.lex input) `shouldBe` expected
     pure ()
