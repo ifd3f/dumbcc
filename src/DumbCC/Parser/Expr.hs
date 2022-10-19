@@ -26,13 +26,13 @@ data StackState =
 type Parser = U.Parser PS
 
 getExprStack :: Parser [(Bool, ExprS)]
-getExprStack = liftGet exprStack
+getExprStack = gets' exprStack
 
 getOpStack :: Parser [BOp]
-getOpStack = liftGet opStack
+getOpStack = gets' opStack
 
 getWasBinary :: Parser Bool
-getWasBinary = liftGet wasBinary
+getWasBinary = gets' wasBinary
 
 setState :: PS -> Parser ()
 setState s = state' (\_ -> ((), s))

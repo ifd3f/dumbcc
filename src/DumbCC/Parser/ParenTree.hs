@@ -1,6 +1,11 @@
+{-# LANGUAGE LambdaCase #-}
+
 module DumbCC.Parser.ParenTree where
 
+import Control.Monad (forM)
 import DumbCC.Lexer
+import DumbCC.Parser.Utils hiding (Parser)
+import qualified DumbCC.Parser.Utils as U
 
 -- | Parentheses tree
 data PTree
@@ -16,47 +21,67 @@ data StackState
 data Paren = Curl | Brac | Paren
   deriving (Show, Eq)
 
-detectParens :: [Token] -> Either String [PTree]
-detectParens [] = Right []
-detectParens toks = reverse <$> detectParens' [] toks
-  where
-    detectParens' stack [] = reduceEmpty stack
-    detectParens' stack (t : ts) = do
-      stack' <- readToken stack t
-      detectParens' stack' ts
+type Parser = U.Parser [StackState]
 
-readToken :: [StackState] -> Token -> Either String [StackState]
-readToken stack tok = case tok of
-  (TPnc LBrac) -> pure $ StOpen Brac : stack
-  (TPnc LCurl) -> pure $ StOpen Curl : stack
-  (TPnc LParen) -> pure $ StOpen Paren : stack
+push :: StackState -> Parser ()
+push t = do
+  stack <- get'
+  put' (t : stack)
+
+pop :: Parser (Maybe StackState)
+pop = do
+  stack <- get'
+  case stack of
+    (t : stack') -> do
+      put' stack'
+      pure $ Just t
+    [] -> pure Nothing
+
+detectParens :: [Token] -> Either String [PTree]
+detectParens toks = evalParser [] $ do
+  _ <- forM toks readToken
+  items <- reduceEmpty
+  pure $ reverse items
+
+-- | Reads a single token into the parser.
+readToken :: Token -> Parser ()
+readToken tok = case tok of
+  (TPnc LBrac) -> push $ StOpen Brac
+  (TPnc LCurl) -> push $ StOpen Curl
+  (TPnc LParen) -> push $ StOpen Paren
   (TPnc RBrac) -> reduce Brac
   (TPnc RCurl) -> reduce Curl
   (TPnc RParen) -> reduce Paren
-  other -> pure $ StPT (PTTok other) : stack
-  where
-    reduce paren = do
-      (children, stack') <- reduceParen paren stack
-      pure $ (StPT $ PTParen paren (reverse children)) : stack'
+  other -> push $ StPT (PTTok other)
 
--- | Returns (the paren's children IN REVERSE, rest of stack)
-reduceParen :: Paren -> [StackState] -> Either String ([PTree], [StackState])
-reduceParen target (StOpen paren : xs)
-  -- We found the correct opening paren
-  | paren == target = Right ([], xs)
-  -- We found a different opening paren
-  | otherwise =
-      Left $ show paren ++ " is closed by " ++ show target
--- Just a normal token
-reduceParen target (StPT pt : xs) = do
-  (children, xs') <- reduceParen target xs
-  pure (pt : children, xs')
--- Unexpected EOF
-reduceParen target [] = Left $ "Dangling closing " ++ show target
+reduce :: Paren -> Parser ()
+reduce paren = do
+  result <- reduce' paren
+  push $ StPT $ PTParen paren (reverse result)
 
-reduceEmpty :: [StackState] -> Either String [PTree]
-reduceEmpty [] = Right []
-reduceEmpty (StOpen paren : _) = Left $ "Unclosed open " ++ show paren
-reduceEmpty (StPT pt : xs) = do
-  rest <- reduceEmpty xs
-  pure (pt : rest)
+-- | Returns the paren's children IN REVERSE.
+reduce' :: Paren -> Parser [PTree]
+reduce' target =
+  pop >>= \case
+    -- Unexpected EOF
+    Nothing -> fail $ "Dangling closing " ++ show target
+    -- We found an opening paren
+    Just (StOpen paren) ->
+      if paren == target -- Is it the type we're looking for?
+        then pure []
+        else fail $ show paren ++ " is incorrectly closed by " ++ show target
+    -- Just a normal token
+    Just (StPT pt) -> do
+      children <- reduce' target
+      pure (pt : children)
+
+-- | Reduces the stack, assuming it has seen EOF
+-- | Returns the top-level values, IN REVERSE.
+reduceEmpty :: Parser [PTree]
+reduceEmpty =
+  pop >>= \case
+    Nothing -> pure []
+    Just (StOpen paren) -> fail $ "Unclosed open " ++ show paren
+    Just (StPT pt) -> do
+      rest <- reduceEmpty
+      pure (pt : rest)
