@@ -11,13 +11,13 @@ data Token
   = TId String
   | TNum String
   | TStr String
-  | TOp Op
   | TPnc Punct
   deriving (Show, Eq)
 
 data Punct
   = Comma
   | Semicolon
+  | Question
   | Colon
   | LCurl
   | RCurl
@@ -25,10 +25,7 @@ data Punct
   | RBrace
   | LParen
   | RParen
-  deriving (Show, Eq)
-
-data Op
-  = Add
+  | Add
   | Sub
   | Mul
   | Div
@@ -99,7 +96,7 @@ takeToken :: Tokenizer (Maybe Token)
 takeToken =
   (TPnc <$$> takePunct)
     <||> (TNum <$$> takeFloat)
-    <||> (TOp <$$> takeOp)
+    <||> (TPnc <$$> takeOp)
     <||> (TId <$$> takeId)
 
 -- | Double fmap
@@ -147,6 +144,7 @@ takePunct = do
   let result = case c of
         Just ',' -> Just Comma
         Just ';' -> Just Semicolon
+        Just '?' -> Just Question
         Just ':' -> Just Colon
         Just '{' -> Just LCurl
         Just '}' -> Just RCurl
@@ -162,9 +160,9 @@ takePunct = do
     _ -> pure ()
   pure result
 
-takeOp :: Tokenizer (Maybe Op)
+takeOp :: Tokenizer (Maybe Punct)
 takeOp = do
-  s <- takeRegex [r|^[\+-\*/=&|^><]+|]
+  s <- takeRegex [r|^[\+-\*/=&|^><]{1,2}|]
   pure $ case s of
     "+" -> Just Add
     "-" -> Just Sub
