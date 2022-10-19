@@ -21,8 +21,8 @@ data Punct
   | Colon
   | LCurl
   | RCurl
-  | LBrace
-  | RBrace
+  | LBrac
+  | RBrac
   | LParen
   | RParen
   | Add
@@ -148,8 +148,8 @@ takePunct = do
         Just ':' -> Just Colon
         Just '{' -> Just LCurl
         Just '}' -> Just RCurl
-        Just '[' -> Just LBrace
-        Just ']' -> Just RBrace
+        Just '[' -> Just LBrac
+        Just ']' -> Just RBrac
         Just '(' -> Just LParen
         Just ')' -> Just RParen
         _ -> Nothing

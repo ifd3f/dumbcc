@@ -8,6 +8,7 @@ import DumbCC.Parser.Types.Sugared
 import qualified DumbCC.Parser.Types.Sugared as P
 import Test.Hspec
 import Data.Traversable
+import DumbCC.Parser.Expr
 
 spec :: Spec
 spec = do
@@ -19,16 +20,16 @@ spec = do
             TPnc L.Eq,
             TNum "5"
           ],
-          Just $ EBi P.Eq (EBi P.Add (ELit (LInt 3)) (ELit (LInt 5))) (ELit (LInt 5))
+          Just $ EBi P.Eq (EBi P.Add (ELit (LNum "5")) (ELit (LNum "5"))) (ELit (LNum "5"))
         ),
         ( [ TId "five",
             TPnc L.Mul,
             TNum "32"
           ],
-          Just $ EBi P.Mul (EId "five") (ELit (LInt 32))
+          Just $ EBi P.Mul (EId "five") (ELit (LNum "32"))
         )
       ]
-      $ \(input, expected :: ExprS) ->
+      $ \(input, expected :: Maybe ExprS) ->
         ( do
             it ("parses " ++ show input ++ " as " ++ show expected) $ do
               parseExpr input `shouldBe` expected

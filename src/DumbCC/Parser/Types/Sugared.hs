@@ -7,9 +7,11 @@ data ExprS
   | EBi BOp ExprS ExprS
   | EApp ExprS ExprS
   | EIdx ExprS ExprS
+  deriving (Show, Eq)
 
 data Prog s
   = Prog [Func s]
+  deriving (Show, Eq)
 
 data Func s = Func
   { fName :: String,
@@ -17,6 +19,7 @@ data Func s = Func
     fArgs :: [(String, String)],
     fBody :: s
   }
+  deriving (Show, Eq)
 
 -- | A sugared statement
 data SStmt
@@ -28,6 +31,7 @@ data SStmt
   | SIf ExprS SStmt SStmt
   | SFor SStmt ExprS SStmt SStmt
   | SWhile ExprS SStmt
+  deriving (Show, Eq)
 
 -- | A desugared statement
 data CStmt
@@ -38,8 +42,10 @@ data CStmt
   | CDecl String String ExprS
   | CIf ExprS SStmt SStmt
   | CWhile ExprS SStmt
+  deriving (Show, Eq)
 
 data Lit = LStr String | LNum String
+  deriving (Show, Eq)
 
 data UOp
   = Inc
@@ -48,6 +54,7 @@ data UOp
   | Pos
   | Deref
   | Ref
+  deriving (Show, Eq)
 
 data BOp
   = Add

@@ -57,12 +57,7 @@ shift t = do
     TId n -> setState (PS ((False, EId n) : es) os False)
     TStr s -> setState (PS ((False, ELit (LStr s)) : es) os False)
     TNum x -> setState (PS ((False, ELit (LNum x)) : es) os False)
-    TPunct p -> case es of
-      [] -> let unary = case p of
-                                Add -> 
-
-      
-    _ -> fail "Parse failure"
+    TPnc _ -> undefined -- TODO
 
 --    ([], TId n) -> Right ([Ex (EId n)], ts)
 --    ([], TNum l) -> Right ([Ex (ELit (LNum l))], ts)
