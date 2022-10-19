@@ -37,9 +37,9 @@ readToken stack tok = case tok of
   where
     reduce paren = do
       (children, stack') <- reduceParen paren stack
-      pure $ (StPT (PTParen paren children)) : stack'
+      pure $ (StPT $ PTParen paren (reverse children)) : stack'
 
--- | Returns (the paren's children, rest of stack)
+-- | Returns (the paren's children IN REVERSE, rest of stack)
 reduceParen :: Paren -> [StackState] -> Either String ([PTree], [StackState])
 reduceParen target (StOpen paren : xs)
   -- We found the correct opening paren

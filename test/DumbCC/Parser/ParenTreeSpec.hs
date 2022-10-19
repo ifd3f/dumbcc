@@ -10,6 +10,31 @@ import Test.Hspec
 
 spec :: Spec
 spec = do
+  describe "readToken" $ do
+    it "places open braces" $ do
+      let result = readToken [] (TPnc LBrac)
+      result `shouldBe` Right [StOpen Brac]
+    it "closes braces when close-brace encountered" $ do
+      let stackNum = StPT . PTTok . TNum
+      let result =
+            readToken
+              [ stackNum "3",
+                stackNum "2",
+                stackNum "1",
+                StOpen Curl
+              ]
+              (TPnc RCurl)
+      result
+        `shouldBe` Right
+          [ StPT $
+              PTParen
+                Curl
+                [ PTTok $ TNum "1",
+                  PTTok $ TNum "2",
+                  PTTok $ TNum "3"
+                ]
+          ]
+
   describe "detectParens" $ do
     _ <- for
       [ ( [ TNum "3",
