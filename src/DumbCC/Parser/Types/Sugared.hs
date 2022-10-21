@@ -24,6 +24,7 @@ data Func s = Func
   deriving (Show, Eq, Functor)
 
 type SProg = Prog SStmt
+
 type SFunc = Func SStmt
 
 -- | A sugared statement
@@ -33,7 +34,7 @@ data SStmt
   | SSingleExpr ExprS
   | SAsgn String ExprS
   | SDecl String String ExprS
-  | SIf ExprS SStmt SStmt
+  | SIf ExprS SStmt (Maybe SStmt)
   | SFor SStmt ExprS SStmt SStmt
   | SWhile ExprS SStmt
   deriving (Show, Eq)
@@ -59,6 +60,8 @@ data UOp
   | Pos
   | Deref
   | Ref
+  | BNot
+  | LNot
   deriving (Show, Eq)
 
 data BOp
@@ -68,10 +71,8 @@ data BOp
   | Div
   | BAnd
   | BOr
-  | BNot
   | LAnd
   | LOr
-  | LNot
   | Xor
   | Eq
   | Neq
@@ -79,4 +80,22 @@ data BOp
   | Le
   | Geq
   | Leq
+  | Dot
+  | Arrow
+  | Modulo
   deriving (Show, Eq)
+
+orderOfOperations =
+  [ [Arrow, Dot],
+    [Mul, Div, Modulo],
+    [Add, Sub],
+    [BAnd, BOr, Xor],
+    [LAnd, LOr]
+  ]
+
+instance Ord BOp where
+  Add `compare` Sub = EQ
+  Mul `compare` Div = EQ
+  BAnd `compare` BOr = EQ
+  BAnd `compare` BOr = EQ
+  a `compare` b = b `compare` a

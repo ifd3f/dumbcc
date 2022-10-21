@@ -33,6 +33,9 @@ gets' f = Parser $ lift (f <$> get)
 state' :: (s -> (a, s)) -> Parser s a
 state' f = Parser $ lift (state f)
 
+mapState :: (s -> s) -> Parser s ()
+mapState f = Parser $ lift (modify f)
+
 put' :: s -> Parser s ()
 put' s = Parser $ lift (put s)
 
