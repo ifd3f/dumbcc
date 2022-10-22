@@ -7,7 +7,7 @@ data ExprS
   | EId String
   | EUn UOp ExprS
   | EBi BOp ExprS ExprS
-  | EApp ExprS ExprS
+  | EApp ExprS [ExprS]
   | EIdx ExprS ExprS
   deriving (Show, Eq)
 
@@ -31,6 +31,7 @@ type SFunc = Func SStmt
 data SStmt
   = SScope [SStmt]
   | SBreak
+  | SReturn ExprS
   | SSingleExpr ExprS
   | SAsgn String ExprS
   | SDecl String String ExprS
@@ -54,8 +55,10 @@ data Lit = LStr String | LNum String
   deriving (Show, Eq)
 
 data UOp
-  = Inc
-  | Dec
+  = PostInc
+  | PostDec
+  | PreInc
+  | PreDec
   | Neg
   | Pos
   | Deref

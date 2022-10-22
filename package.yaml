@@ -6,6 +6,7 @@ dependencies:
   - optparse-applicative
   - raw-strings-qq
   - regex-tdfa
+  - split
   - syb
   - text
 ghc-options:
