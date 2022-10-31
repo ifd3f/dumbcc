@@ -24,7 +24,7 @@ evalParser = flip $ evalState . runExceptT . _runParser
 execParser :: s -> Parser s a -> s
 execParser = flip $ execState . runExceptT . _runParser
 
-get' :: Parser a a
+get' :: Parser s s
 get' = Parser $ lift get
 
 gets' :: (s -> a) -> Parser s a

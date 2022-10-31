@@ -45,6 +45,7 @@ data SStmt
   | SIf ExprS SStmt (Maybe SStmt)
   | SFor SStmt ExprS SStmt SStmt
   | SWhile ExprS SStmt
+  | SEmpty
   deriving (Show, Eq)
 
 -- | A desugared statement

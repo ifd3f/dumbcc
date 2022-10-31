@@ -2,6 +2,8 @@ name: dumbcc-lib
 dependencies:
   - base
   - bytestring
+  - containers
+  - lens
   - mtl
   - optparse-applicative
   - raw-strings-qq
