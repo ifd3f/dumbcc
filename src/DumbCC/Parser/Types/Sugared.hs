@@ -18,10 +18,17 @@ data Prog s
 data Func s = Func
   { fName :: String,
     fRet :: String,
-    fArgs :: [(String, String)],
+    fParams :: [(String, String)],
     fBody :: s
   }
   deriving (Show, Eq, Functor)
+
+data Param = Param
+  { pType :: String,
+    pName :: String
+  }
+
+data Type = TPointer Type | TConcrete String | TFunc Type [Type] 
 
 type SProg = Prog SStmt
 

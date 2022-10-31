@@ -5,13 +5,13 @@ module DumbCC.Parser.Statement where
 import DumbCC.Lexer
 import DumbCC.Parser.ParenTree hiding (Parser)
 import DumbCC.Parser.Types.Sugared
-import DumbCC.Parser.Utils (evalParser, get', liftEither', put', state')
+import DumbCC.Parser.Utils hiding (Parser)
 import qualified DumbCC.Parser.Utils as U
 
 type Parser = U.Parser [PTree]
 
 takeProgram :: Parser SProg
-takeProgram = undefined
+takeProgram = ta
 
 takeFunc :: Parser SFunc
 takeFunc = undefined
@@ -37,7 +37,7 @@ takeStmts = reverse <$> stmts
           rest <- takeStmts
           pure (s : rest)
 
-takeExprStmt :: Parser ExprS
+takeExprStmt :: Parser SStmt
 takeExprStmt = do
   expr <- takeExpr
   _ <-
@@ -46,7 +46,7 @@ takeExprStmt = do
       _ -> fail "Expected semicolon"
   pure $ SSingleExpr expr
 
-takeIfStmt :: Parser ExprS
+takeIfStmt :: Parser SStmt
 takeIfStmt = do
   ifCond <-
     get' >>= \case
